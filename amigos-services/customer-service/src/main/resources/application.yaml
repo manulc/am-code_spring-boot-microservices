@@ -1,0 +1,65 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: customer-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/customer
+    username: user
+    password: password
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: 'true'
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: 'true'
+  zipkin:
+    # Opcional porque es el valor por defecto
+    base-url: http://localhost:9411
+  rabbitmq:
+    # Opcional porque es el valor por defecto
+    addresses: localhost:5672
+
+eureka:
+  client:
+    service-url:
+      # Opcional porque se trata del valor por defecto
+      defaultZone: http://localhost:8761/eureka
+    # Opcionales porque se trata de los valores por defecto
+    fetch-registry: true
+    register-with-eureka: true
+
+rabbitmq:
+  exchange: internal.exchange
+  queue: notification.queue
+  routing-key: internal.notification.routing-key
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:postgresql://postgresql:5432/customer
+  zipkin:
+    base-url: http://zipkin:9411
+  rabbitmq:
+    addresses: rabbitmq:5672
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+---
+spring:
+  profiles: kube
+  datasource:
+    url: jdbc:postgresql://postgresql:5432/customer
+  zipkin:
+    base-url: http://zipkin:9411
+  rabbitmq:
+    addresses: rabbitmq:5672
+
+eureka:
+  client:
+    enabled: false

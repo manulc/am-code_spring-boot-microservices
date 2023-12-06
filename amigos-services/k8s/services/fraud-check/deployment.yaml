@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-check-deploy
+  labels:
+    app: fraud-check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-check
+  template:
+    metadata:
+      name: fraud-check
+      labels:
+        app: fraud-check
+    spec:
+      containers:
+        - name: fraud-check-service
+          image: manulc/fraud-check-service
+          # En este caso, "Always" es el valor por defecto porque la versión de la imagen es latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: kube

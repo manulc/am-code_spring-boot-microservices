@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: customer
+          uri: lb://customer-service
+          predicates:
+            - Path=/api/v1/customers
+  zipkin:
+    # Opcional porque es el valor por defecto
+    base-url: http://localhost:9411
+
+eureka:
+  client:
+    service-url:
+      # Opcional porque se trata del valor por defecto
+      defaultZone: http://localhost:8761/eureka
+    # Opcionales porque se trata de los valores por defecto
+    fetch-registry: true
+    register-with-eureka: true

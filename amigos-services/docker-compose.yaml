@@ -1,0 +1,113 @@
+services:
+  postgresql:
+    container_name: postgres
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    networks:
+      - postgres
+    restart: unless-stopped
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.8
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}"
+      - "PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}"
+      - "PGADMIN_CONFIG_SERVER_MODE=False"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin:2.23.16
+    ports:
+      - "9411:9411"
+    networks:
+      - spring
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9.11-management-alpine
+    ports:
+      - "15672:15672"
+    networks:
+      - spring
+  # Ejecutar la fase "package" de Maven con el perfil "build-docker-image" sobre el proyecto
+  # multimódulo(Por ejemplo, "mvn clean package -P build-docker-image") para generar las imágenes.
+  eureka-server:
+    container_name: eureka-server
+    image: manulc/eureka-server:latest
+    ports:
+      - "8761:8761"
+    networks:
+      - spring
+  api-gateway:
+    container_name: api-gateway
+    image: manulc/api-gateway:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8083:8083"
+    networks:
+      - spring
+    depends_on:
+      - zipkin
+      - eureka-server
+      - customer-service
+  customer-service:
+    container_name: customer-service
+    image: manulc/customer-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - zipkin
+      - eureka-server
+      - postgresql
+      - rabbitmq
+      - fraud-check-service
+  fraud-check-service:
+    container_name: fraud-check-service
+    image: manulc/fraud-check-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - zipkin
+      - eureka-server
+      - postgresql
+      - rabbitmq
+  notification-service:
+    container_name: notification-service
+    image: manulc/notification-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - zipkin
+      - eureka-server
+      - postgresql
+      - rabbitmq
+
+volumes:
+  postgres:
+  pgadmin:
+
+networks:
+  postgres:
+    driver: bridge
+  # Por defecto, el tipo de red es "bridge"
+  spring:

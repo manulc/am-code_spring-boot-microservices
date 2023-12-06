@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: postgres
+spec:
+  # Por defecto, el tipo de servicio es ClusterIP
+  selector:
+    app: postgres
+  ports:
+    # Si no indicamos la propiedad "targetPort", poe defecto se establece al valor de la propiedad "port"
+    - port: 5432

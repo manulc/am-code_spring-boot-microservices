@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraud-check-service
+  labels:
+    app: fraud-check
+spec:
+  # Si no se indica el tipo, por defecto es ClusterIP
+  selector:
+    app: fraud-check
+  ports:
+    - port: 80
+      targetPort: 8081
+      

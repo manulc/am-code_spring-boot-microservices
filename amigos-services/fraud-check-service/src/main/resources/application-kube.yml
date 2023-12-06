@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgresql:5432/fraud
+  zipkin:
+    base-url: http://zipkin:9411
+
+eureka:
+  client:
+    enabled: false
